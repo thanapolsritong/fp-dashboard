@@ -1,0 +1,108 @@
+<script>
+  // ปุ่ม
+  const manageBtn = document.getElementById('btn-manage');
+  const sellBtn = document.getElementById('btn-sell');
+  const reportBtn = document.getElementById('btn-report');
+
+  // ส่วนของเนื้อหา
+  const manageSection = document.getElementById('manage-section');
+  const sellSection = document.getElementById('sell-section');
+  const reportSection = document.getElementById('report-section');
+
+  // ตารางสินค้า
+  const productTable = document.querySelector('#product-table tbody');
+  const addBtn = document.getElementById('add-btn');
+  const nameInput = document.getElementById('name');
+  const priceInput = document.getElementById('price');
+
+  // รายการขาย
+  const sellList = document.getElementById('sell-list');
+  const totalDisplay = document.getElementById('total-display');
+  const finishBtn = document.getElementById('finish-btn');
+
+  // รายงาน
+  const totalSales = document.getElementById('total-sales');
+  const bestSeller = document.getElementById('best-seller');
+
+  let products = [];
+  let totalSaleAmount = 0;
+
+  // ฟังก์ชันสลับหน้า
+  function show(section) {
+    [manageSection, sellSection, reportSection].forEach(s => s.style.display = 'none');
+    section.style.display = 'block';
+  }
+
+  manageBtn.addEventListener('click', () => show(manageSection));
+  sellBtn.addEventListener('click', () => show(sellSection));
+  reportBtn.addEventListener('click', () => show(reportSection));
+
+  // เพิ่มสินค้า
+  addBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const price = parseFloat(priceInput.value);
+    if (!name || isNaN(price)) return alert('กรุณากรอกชื่อและราคา');
+    const product = { name, price, sold: 0 };
+    products.push(product);
+    renderProducts();
+    nameInput.value = '';
+    priceInput.value = '';
+  });
+
+  // แสดงรายการสินค้า
+  function renderProducts() {
+    productTable.innerHTML = '';
+    products.forEach((p, i) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${p.name}</td>
+        <td>${p.price} บาท</td>
+        <td>${p.sold}</td>
+        <td><button onclick="deleteProduct(${i})">ลบ</button></td>
+      `;
+      productTable.appendChild(row);
+    });
+    renderSellList();
+  }
+
+  // ลบสินค้า
+  window.deleteProduct = function (index) {
+    products.splice(index, 1);
+    renderProducts();
+  }
+
+  // รายการขาย
+  function renderSellList() {
+    sellList.innerHTML = '';
+    products.forEach((p, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = `${p.name} (${p.price}฿)`;
+      btn.onclick = () => sellProduct(i);
+      sellList.appendChild(btn);
+    });
+  }
+
+  // ขายสินค้า
+  function sellProduct(index) {
+    products[index].sold++;
+    totalSaleAmount += products[index].price;
+    totalDisplay.textContent = `ยอดรวม: ${totalSaleAmount} บาท`;
+    renderProducts();
+  }
+
+  // จบการขาย
+  finishBtn.addEventListener('click', () => {
+    let best = '-';
+    if (products.length > 0) {
+      const top = products.reduce((a, b) => (a.sold > b.sold ? a : b));
+      best = top.name;
+    }
+    totalSales.textContent = `ยอดขายรวม: ${totalSaleAmount} บาท`;
+    bestSeller.textContent = `สินค้าขายดี: ${best}`;
+    show(reportSection);
+  });
+
+  // แสดงหน้าแรก
+  show(manageSection);
+</script>
